@@ -25,11 +25,6 @@ class CPU:
 
         # Markers
         self.PC = 0
-        self.IR = None
-        self.FL = 0
-        self.MAR = None
-        self.MDR = None
-        self.SP = 7  # self.reg[7]
 
         #  Flags
         self.E = None
