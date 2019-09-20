@@ -2,21 +2,13 @@
 
 import sys
 
-# From LS8 Cheatsheet (No All):
-# ALU ops
-ADD = 0b10100000
+
+LDI = 0b10000010
+PRN = 0b01000111
+HLT = 0b00000001
 MUL = 0b10100010
 CMP = 0b10100111
-
-# Other
-HLT = 0b00000001
-LDI = 0b10000010
-PUSH = 0b01000101
-POP = 0b01000110
-PRN = 0b01000111
-CALL = 0b01010000
-RET = 0b00010001
-JMP = 0B01010100
+JMP = 0b01010100
 JEQ = 0b01010101
 JNE = 0b01010110
 
@@ -30,20 +22,19 @@ class CPU:
         self.reg = [0] * 8
         self.ram = [0] * 256
         self.ram[0] = 0x00
-        
+
         # Markers
         self.PC = 0
         self.IR = None
         self.FL = 0
         self.MAR = None
         self.MDR = None
-        self.SP = 7 # self.reg[7]
+        self.SP = 7  # self.reg[7]
 
         #  Flags
         self.E = None
         self.L = None
         self.G = None
-
 
     def load(self, filename):
         """Load a program into memory."""
@@ -79,22 +70,6 @@ class CPU:
             print(f"{sys.argv[0]}: {sys.argv[1]} not found")
             sys.exit(2)
 
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010,  # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111,  # PRN R0
-        #     0b00000000,
-        #     0b00000001,  # HLT
-        # ]
-
-        # for instruction in program:
-        #     self.ram[address] = instruction
-        #     address += 1
-
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
@@ -107,7 +82,7 @@ class CPU:
         elif op == "CMP":
             """If they are equal, set the Equal E flag to 1, otherwise set it to 0.
             If registerA is less than registerB, set the Less-than L flag to 1, otherwise set it to 0.
-            
+
             If registerA is greater than registerB, set the Greater-than G flag to 1, otherwise set it to 0."""
 
             self.E = 0
@@ -178,112 +153,40 @@ class CPU:
             # command is self.IR
 
             if self.IR == LDI:
-                print("LDI")
                 self.reg[operand_a] = operand_b
                 # print("Reg:", operand_a, "Value: ", self.reg[operand_a])
                 self.PC += 3
 
             elif self.IR == PRN:
-                print("PRN")
                 print(self.reg[operand_a])
                 self.PC += 2
 
-            elif self.IR == ADD:
-                print("ADD")
-                self.alu("ADD", operand_a, operand_b)
-                self.PC += 3
-
             elif self.IR == MUL:
-                print("MUL")
                 self.alu("MUL", operand_a, operand_b)
                 self.PC += 3
 
             elif self.IR == HLT:
-                print("HLT")
                 running = False
                 self.PC += 1
 
-            elif self.IR == PUSH:
-                print("PUSH")
-
-                # decrement the SP
-                # decrement what the SP points to
-                # reg[7] now points to...
-                self.reg[self.SP] -= 1
-
-                # get the value at requested register
-                value = self.reg[operand_a]
-                # print("Reg # and Value: ", operand_a, value)
-
-                # set memory at register SP to value
-                self.ram[self.reg[self.SP]] = value
-
-                self.PC += 2
-
-            elif self.IR == POP:
-                print("POP")
-
-                # get the value of address in mem pointed to by SP
-                value = self.ram[self.reg[self.SP]]
-
-                # set this value to register
-                self.reg[operand_a] = value
-
-                # increment SP
-                self.reg[self.SP] += 1
-
-                self.PC += 2
-
-            elif self.IR == CALL:
-                print("CALL")
-
-                # decrement stack pointer
-                self.reg[self.SP] -= 1
-
-                # set memory at register SP to instruction to return to
-                # the next instruction after call
-
-                self.ram[self.reg[self.SP]] = self.PC + 2
-
-                # set the PC to where the subroutine is in the register (the value at that register)
-
-                self.PC = self.reg[operand_a]  # = index/address 24
-                # print("PC at", self.PC)
-
-            elif self.IR == RET:
-                print("RET")
-
-                # set PC to return instruction from stack
-                return_here = self.ram[self.reg[self.SP]]
-                self.PC = return_here
-
-                # increment SP
-                self.reg[self.SP] += 1
-
             elif self.IR == CMP:
-                print("CMP")
                 self.alu("CMP", operand_a, operand_b)
                 self.PC += 3
 
             elif self.IR == JMP:
-                print("JMP")
                 self.PC = self.reg[operand_a]
 
             elif self.IR == JEQ:
-                print("JEQ")
 
                 if self.E == 1:
-                    print("equal flag true")
                     self.PC = self.reg[operand_a]
 
                 elif self.E != 1:
                     self.PC += 2
 
             elif self.IR == JNE:
-                print("JNE")
 
                 if self.E != 1:
-                    print("equal flag true")
                     self.PC = self.reg[operand_a]
 
                 elif self.E == 1:
